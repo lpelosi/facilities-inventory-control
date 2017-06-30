@@ -61,7 +61,7 @@ public class OrderTracker extends Application {
                 stringConfigDBPassword;
         private Connection connection = null;
         private TextField tfOrderNumber = new TextField("");
-        private TextField tfOrderDate = new TextField("");
+        private TextField tfInvoiceDate = new TextField("");
         private TextField tfItemName = new TextField("");
         private TextField tfItemNumber = new TextField("");
         private TextField tfQuantity = new TextField("");
@@ -381,7 +381,7 @@ public class OrderTracker extends Application {
                         itemToSearchBy+"'");
             while(resultSetOfInventory.next()){
                 tfOrderNumber.setText(resultSetOfInventory.getObject("ordernumber").toString());
-                tfOrderDate.setText(resultSetOfInventory.getObject("orderdate").toString());
+                tfInvoiceDate.setText(resultSetOfInventory.getObject("invoicedate").toString());
                 tfItemNumber.setText(resultSetOfInventory.getObject("itemnumber").toString());
                 tfItemName.setText(resultSetOfInventory.getObject("item").toString());
                 tfQuantity.setText(resultSetOfInventory.getObject("quantity").toString());
@@ -437,9 +437,9 @@ public class OrderTracker extends Application {
             
             Statement statementForDates = connection.createStatement();
             ResultSet rSetForDates = statementForDates.executeQuery(
-                    "select orderdate from " + tableID + ";");
+                    "select invoicedate from " + tableID + ";");
             while(rSetForDates.next()){
-                String orderDate = rSetForDates.getObject("orderdate")
+                String orderDate = rSetForDates.getObject("invoicedate")
                         .toString();
                 if(dateList.contains(orderDate)){
                     
@@ -482,7 +482,7 @@ public class OrderTracker extends Application {
                 itemToSearchBy = "ordernumber";
                 setInventoryFields();
                 displayOrdersForAll("ordernumber = '" + orderNumberBox.
-                        getValue().toString()+"';");
+                        getValue().toString()+"'");
                 tfOrderNumber.setText(orderNumberBox.getValue().toString());
             } catch (Exception ex) {
                 Logger.getLogger(OrderTracker.class.getName())
@@ -493,11 +493,11 @@ public class OrderTracker extends Application {
         Button dateButton = new Button("Search by date");
         dateButton.setOnAction(e->{
             try {
-                itemToSearchBy = "orderdate";
+                itemToSearchBy = "invoicedate";
                 setInventoryFields();
-                displayOrdersForAll("orderdate = '" + dateBox.getValue()
-                        .toString() +"';");
-                tfOrderDate.setText(dateBox.getValue().toString());
+                displayOrdersForAll("invoicedate = '" + dateBox.getValue()
+                        .toString() +"'");
+                tfInvoiceDate.setText(dateBox.getValue().toString());
             } catch (Exception ex) {
                 Logger.getLogger(OrderTracker.class.getName())
                         .log(Level.SEVERE, null, ex);
@@ -510,7 +510,7 @@ public class OrderTracker extends Application {
                 itemToSearchBy = "item";
                 setInventoryFields();
                 displayOrdersForAll("item = '" + itemsBox.getValue().toString()
-                        +"';");
+                        +"'");
                 tfItemName.setText(itemsBox.getValue().toString());
             } catch (Exception ex) {
                 Logger.getLogger(OrderTracker.class.getName())
@@ -524,7 +524,7 @@ public class OrderTracker extends Application {
                 itemToSearchBy = "itemnumber";
                 setInventoryFields();
                 displayOrdersForAll("itemnumber = '" + tfItemNumber
-                        .getText()+"';");
+                        .getText()+"'");
             } catch (Exception ex) {
                 Logger.getLogger(OrderTracker.class.getName())
                         .log(Level.SEVERE, null, ex);
@@ -536,7 +536,7 @@ public class OrderTracker extends Application {
             try {
                 itemToSearchBy = "location";
                 setInventoryFields();
-                displayOrdersForAll("location = '" + tfLocation.getText()+"';");
+                displayOrdersForAll("location = '" + tfLocation.getText()+"'");
             } catch (Exception ex) {
                 Logger.getLogger(OrderTracker.class.getName())
                         .log(Level.SEVERE, null, ex);
@@ -549,7 +549,7 @@ public class OrderTracker extends Application {
                 itemToSearchBy = "supplier";
                 setInventoryFields();
                 displayOrdersForAll("supplier = '" + tfItemSupplier
-                        .getText()+"';");
+                        .getText()+"'");
             } catch (Exception ex) {
                 Logger.getLogger(OrderTracker.class.getName())
                         .log(Level.SEVERE, null, ex);
@@ -561,7 +561,7 @@ public class OrderTracker extends Application {
             try {
                 itemToSearchBy = "invoice";
                 setInventoryFields();
-                displayOrdersForAll("invoice = '" + tfInvoice.getText()+"';");
+                displayOrdersForAll("invoice = '" + tfInvoice.getText()+"'");
             } catch (Exception ex) {
                 Logger.getLogger(OrderTracker.class.getName())
                         .log(Level.SEVERE, null, ex);
@@ -577,7 +577,7 @@ public class OrderTracker extends Application {
         fieldsPane.add(orderNumberBox,1,0);
         fieldsPane.add(numberButton,2,0);
         fieldsPane.add(clearButton,3,0);
-        fieldsPane.add(new Label("Order Date : "),0,1);
+        fieldsPane.add(new Label("Invoice Date : "),0,1);
         fieldsPane.add(dateBox, 1, 1);
         fieldsPane.add(dateButton,2,1);
         fieldsPane.add(new Label("Item Name : "),0,2);
@@ -625,28 +625,30 @@ public class OrderTracker extends Application {
     // METHOD TO COLLECT ORDER INFO AND DISPLAY IN TEXTAREA
     private void displayOrdersForAll(String searchCondition){
         String orderDetailsLine = "", orderDetailsList = "", orderNumber = "", 
-                orderDate = "", item = "", itemNumber = "", location = "", 
+                invoiceDate = "", item = "", itemNumber = "", location = "", 
                 quantity = "", price = "", supplier = "", invoice = "";
         Statement statementToSearch = null;
         ResultSet rSetSearch = null;
         
         String labelDescriptor = String.format(
         "%-15s%3s%-10s%3s%1s%3s%-50s%3s%-15s%3s%-7s%3s%-8s%3s%-24s%3s%-15s",
-                "Order Number"," | ","Order Date"," | ","X"," | ",
+                "Order Number"," | ","Invoice Date"," | ","X"," | ",
                 "Item"," | ","ItemNumber"," | ","Price"," | ","Quantity",
                 " | ","Supplier"," | ","Invoice");
         
         orderDetailsList += (labelDescriptor + "\n");
-        
+       
         try{
             statementToSearch = connection.createStatement();
             rSetSearch = statementToSearch.executeQuery("select * from " +
-                    tableID + " where " + searchCondition);
+                    tableID + " where " + searchCondition + " order by " +
+                    "invoicedate asc;");
             
             while(rSetSearch.next()){
                 orderNumber = rSetSearch.getObject("ordernumber").toString()
                         .trim();
-                orderDate = rSetSearch.getObject("orderdate").toString().trim();
+                invoiceDate = rSetSearch.getObject("invoicedate")
+                        .toString().trim();
                 supplier = rSetSearch.getObject("supplier").toString().trim();
                 location = rSetSearch.getObject("location").toString().trim();
                 item = rSetSearch.getObject("item").toString().trim();
@@ -657,18 +659,17 @@ public class OrderTracker extends Application {
                 invoice = rSetSearch.getObject("invoice").toString().trim();
                 
                 tfOrderNumber.setText(orderNumber);
-                tfOrderDate.setText(orderDate);
+                tfInvoiceDate.setText(invoiceDate);
                 tfInvoice.setText(invoice);
                 tfItemSupplier.setText(supplier);
                 
                 orderDetailsLine = String.format(
           "%-15s%3s%-10s%3s%1s%3s%-50s%3s%-15s%3s%-7s%3s%-8s%3s%-24s%3s%-15s",
-                        orderNumber," | ",orderDate," | ",location," | ",item,
+                        orderNumber," | ",invoiceDate," | ",location," | ",item,
                         " | ",itemNumber," | ",price," | ",quantity," | ",
                         supplier," | ",invoice);
-                
                 orderDetailsList += (orderDetailsLine + "\n");
-                
+               
             }
             
         }catch(SQLException ex){
@@ -847,7 +848,7 @@ public class OrderTracker extends Application {
            tfLocation.setText("");
            tfItemPrice.setText("");
            tfOrderNumber.setText("");
-           tfOrderDate.setText("");
+           tfInvoiceDate.setText("");
            tfInvoice.setText("");
         });
         
@@ -855,10 +856,10 @@ public class OrderTracker extends Application {
             try {
                 PreparedStatement addToStatement = null; 
                 String prepStatement = "INSERT INTO " + tableID +
-                        " (orderdate,ordernumber,location,item,"
+                        " (invoicedate,ordernumber,location,item,"
                         + "itemnumber,price,"
                         + "quantity,supplier,invoice) VALUES ('" + 
-                        tfOrderDate.getText().toUpperCase() +"','"
+                        tfInvoiceDate.getText().toUpperCase() +"','"
                         + tfOrderNumber.getText().toUpperCase() + 
                         "','" + tfLocation.getText().toUpperCase() +" ','"
                         + tfItemName.getText().toUpperCase() + 
@@ -880,7 +881,7 @@ public class OrderTracker extends Application {
         updateDatabase.setOnAction(e->{
             try{
                 String updateString = "UPDATE " + tableID +  
-                        " SET orderdate = '" + tfOrderDate.getText() + 
+                        " SET invoicedate = '" + tfInvoiceDate.getText() + 
                         "', location = '" + tfLocation.getText().toUpperCase()
                         + "', " + "item = '" + tfItemName.getText()
                                 .toUpperCase() +
@@ -922,8 +923,8 @@ public class OrderTracker extends Application {
         
         fieldsPane.add(new Label("Order Number : "),0,0);
         fieldsPane.add(tfOrderNumber,1,0);
-        fieldsPane.add(new Label("Order Date : "),0,1);
-        fieldsPane.add(tfOrderDate, 1, 1);
+        fieldsPane.add(new Label("Invoice Date : "),0,1);
+        fieldsPane.add(tfInvoiceDate, 1, 1);
         fieldsPane.add(new Label("Enter as YYYY-MM-DD"),2,1);
         fieldsPane.add(new Label("Item Name : "),0,2);
         fieldsPane.add(tfItemName,1,2);
@@ -1202,7 +1203,7 @@ public class OrderTracker extends Application {
     // METHOD TO CLEAR GUI TEXTFIELDS
     private void clearFields(){
         tfOrderNumber.setText("");
-        tfOrderDate.setText("");
+        tfInvoiceDate.setText("");
         tfItemName.setText("");
         tfItemNumber.setText("");
         tfQuantity.setText("");
@@ -1225,7 +1226,7 @@ public class OrderTracker extends Application {
         "ItemNumber"," | ","Price"," | ","Quantity");
         
         orderDetailsList += ("Order Number: " + tfOrderNumber.getText() +"\n");
-        orderDetailsList += ("Order Date: " + tfOrderDate.getText() + "\n");
+        orderDetailsList += ("Invoice Date: " + tfInvoiceDate.getText() + "\n");
         orderDetailsList += ("Invoice Number: " + tfInvoice.getText() + "\n");
         orderDetailsList += ("Supplier: " + tfItemSupplier.getText() + "\n");
         orderDetailsList += ("\n" + "\n" + labelDescriptor + "\n" + "\n");
